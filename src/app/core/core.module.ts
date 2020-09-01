@@ -1,5 +1,4 @@
 import {NgModule, Optional, SkipSelf} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {AppRoutingModule} from '../app-routing.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {BrowserModule} from '@angular/platform-browser';
@@ -16,7 +15,6 @@ registerLocaleData(zh);
 @NgModule({
   declarations: [],
   imports: [
-    CommonModule,
     BrowserModule,
     BrowserAnimationsModule,
     PagesModule,
