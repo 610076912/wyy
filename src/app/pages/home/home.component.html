@@ -2,10 +2,10 @@
   <!--  轮播图 -->
   <app-wy-carousel #wyCarousel [activeIndex]="carouselActiveIndex" (changeSlide)="onChangeSlide($event)">
     <nz-carousel
-            nzEffect="fade"
-            nzAutoPlay
-            (nzBeforeChange)="onBeforeChange($event)"
-            [nzDotRender]="wyCarousel.dotRef">
+      nzEffect="fade"
+      nzAutoPlay
+      (nzBeforeChange)="onBeforeChange($event)"
+      [nzDotRender]="wyCarousel.dotRef">
       <div class="carousel-item" nz-carousel-content *ngFor="let banner of banners">
         <a [href]="banner.url" target="_blank" class="banner-item">
           <img [src]="banner.imageUrl"/>
@@ -36,9 +36,10 @@
           <div class="down">
             <div class="down-wrap">
               <app-single-sheet
-                      *ngFor="let sheet of songSheetList"
-                      [sheet]="sheet"
-                      class="sheet-item"></app-single-sheet>
+                (sheetPlay)="onPlaySheet($event)"
+                *ngFor="let sheet of songSheetList"
+                [sheet]="sheet"
+                class="sheet-item"></app-single-sheet>
             </div>
           </div>
         </div>
@@ -51,7 +52,7 @@
           <div class="list">
             <div class="card" *ngFor="let item of singerList">
               <div class="pic">
-                <img appImgDefault [src]="item.picUrl" [alt]="item.name">
+                <img [src]="item.picUrl" [alt]="item.name">
               </div>
               <div class="txt">
                 <b class="ellipsis">{{item.name}}</b>

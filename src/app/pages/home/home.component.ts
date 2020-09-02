@@ -5,6 +5,7 @@ import {Banner, HotTag, Singer, SongSheet} from '../../service/data-types/common
 import {NzCarouselComponent} from 'ng-zorro-antd/carousel';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
+import {SheetService} from '../../service/sheet.service';
 
 @Component({
   selector: 'app-home',
@@ -22,6 +23,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private homeService: HomeService,
     private singerService: SingerService,
+    private sheetService: SheetService,
     private route: ActivatedRoute
   ) {
     this.route.data.pipe(
@@ -79,6 +81,12 @@ export class HomeComponent implements OnInit {
 
   onChangeSlide(type): void {
     this.nzCarousel[type]();
+  }
+
+  onPlaySheet(id): void {
+    this.sheetService.playSheet(id).subscribe(res => {
+      console.log(res);
+    });
   }
 
 }

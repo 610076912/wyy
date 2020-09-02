@@ -1,1 +1,51 @@
-<p>wy-player works!</p>
+<div class="m-player">
+  <div class="lock">
+    <div class="left"></div>
+    <div class="hand"></div>
+    <div class="container">
+      <div class="wrap">
+        <div class="btns">
+          <i class="prev"></i>
+          <i class="toggle"></i>
+          <i class="next"></i>
+        </div>
+        <div class="head">
+          <img src="" alt="">
+          <i class="mask"></i>
+        </div>
+        <div class="play">
+          <div class="words clearfix hide">
+            <p class="ellipsis"></p>
+            <ul class="songs clearfix">
+              <li>
+                <a>歌手1</a>
+              </li>
+              <li>
+                <a>歌手2</a>
+              </li>
+            </ul>
+          </div>
+          <div class="bar">
+            <div class="slider-wrap">
+              <app-wy-slider></app-wy-slider>
+            </div>
+            <span class="time">
+              <em>2:11</em> / 4:35
+            </span>
+          </div>
+        </div>
+        <div class="oper">
+          <i class="like" title="收藏"></i>
+          <i class="share" title="分享"></i>
+        </div>
+        <div class="ctrl">
+          <i class="volume" title="音量"></i>
+          <i class="loop" title="循环"></i>
+          <p class="open">
+            <span></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
