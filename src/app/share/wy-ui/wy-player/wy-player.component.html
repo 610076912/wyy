@@ -27,7 +27,7 @@
           </div>
           <div class="bar">
             <div class="slider-wrap">
-              <app-wy-slider></app-wy-slider>
+              <app-wy-slider [(ngModel)]="sliderValue" [bufferOffset]="50"></app-wy-slider>
             </div>
             <span class="time">
               <em>2:11</em> / 4:35
@@ -44,8 +44,18 @@
           <p class="open">
             <span></span>
           </p>
+          <div class="control-vol">
+            <app-wy-slider [(ngModel)]="sliderValue" [wyVertical]="true"></app-wy-slider>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+
+  <audio
+    #audioEl
+    (canplay)="onCanPlay()"
+    [src]="currentSong?.url">
+  </audio>
 </div>

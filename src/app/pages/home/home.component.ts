@@ -6,6 +6,9 @@ import {NzCarouselComponent} from 'ng-zorro-antd/carousel';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {SheetService} from '../../service/sheet.service';
+import {Store} from '@ngrx/store';
+import {AppStoreModule} from '../../store';
+import {setCurrentIndex, setPlayList, setSongList} from '../../store/actions/player.actions';
 
 @Component({
   selector: 'app-home',
@@ -24,7 +27,8 @@ export class HomeComponent implements OnInit {
     private homeService: HomeService,
     private singerService: SingerService,
     private sheetService: SheetService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private store$: Store<AppStoreModule>
   ) {
     this.route.data.pipe(
       map(res => res.homeData)
@@ -41,51 +45,50 @@ export class HomeComponent implements OnInit {
   }
 
   // 获取banner图
-  private getBanners(): void {
-    this.homeService.getBanners().subscribe(banners => {
-      this.banners = banners;
-    });
-  }
+  // private getBanners(): void {
+  //   this.homeService.getBanners().subscribe(banners => {
+  //     this.banners = banners;
+  //   });
+  // }
 
   // 获取HotTags
-  private getHotTags(): void {
-    this.homeService.getHotTags().subscribe(hotTags => {
-      this.hotTags = hotTags;
-      console.log(this.hotTags);
-    });
-  }
-
-  // 获取歌单
-  private getSongSheets(): void {
-    this.homeService.getPersonalShellList().subscribe(result => {
-      this.songSheetList = result;
-      console.log(this.songSheetList);
-    });
-  }
-
-  // 获取歌手列表
-  private getSingerList(): void {
-    this.singerService.getSingerList().subscribe(res => {
-      console.log(res);
-      this.singerList = res;
-    });
-  }
+  // private getHotTags(): void {
+  //   this.homeService.getHotTags().subscribe(hotTags => {
+  //     this.hotTags = hotTags;
+  //   });
+  // }
+  //
+  // // 获取歌单
+  // private getSongSheets(): void {
+  //   this.homeService.getPersonalShellList().subscribe(result => {
+  //     this.songSheetList = result;
+  //   });
+  // }
+  //
+  // // 获取歌手列表
+  // private getSingerList(): void {
+  //   this.singerService.getSingerList().subscribe(res => {
+  //     this.singerList = res;
+  //   });
+  // }
 
   ngOnInit(): void {
 
   }
-
+  // 获取轮播图的当前活动index
   onBeforeChange({to}: { to: number }): void {
     this.carouselActiveIndex = to;
   }
-
+  // 调用轮播图的下一页上一页方法
   onChangeSlide(type): void {
     this.nzCarousel[type]();
   }
 
   onPlaySheet(id): void {
-    this.sheetService.playSheet(id).subscribe(res => {
-      console.log(res);
+    this.sheetService.playSheet(id).subscribe(list => {
+      this.store$.dispatch(setSongList({songList: list}));
+      this.store$.dispatch(setPlayList({playList: list}));
+      this.store$.dispatch(setCurrentIndex({currentIndex: 0}));
     });
   }
 

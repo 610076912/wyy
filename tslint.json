@@ -9,7 +9,6 @@
     },
     "array-type": false,
     "arrow-return-shorthand": true,
-    "curly": true,
     "deprecation": {
       "severity": "warning"
     },
@@ -144,7 +143,13 @@
     "template-banana-in-box": true,
     "template-no-negated-async": true,
     "use-lifecycle-interface": true,
-    "use-pipe-transform-interface": true
+    "use-pipe-transform-interface": true,
+    "rules": {
+      "curly": [
+        true,
+        "ignore-same-line"
+      ]
+    }
   },
   "rulesDirectory": [
     "codelyzer"

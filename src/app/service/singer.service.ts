@@ -32,7 +32,6 @@ export class SingerService {
 
   getSingerList(args: SingerParams = defaultSingerParams): Observable<Singer[]> {
     const params = new HttpParams({fromString: queryString.stringify(args)});
-    console.log(params);
     return this.http.get(this.uri + 'artist/list', {params})
       .pipe(
         switchMap((res: { artists: Singer[] }) => res.artists),

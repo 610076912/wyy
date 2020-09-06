@@ -1,15 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   Input,
   OnChanges,
   OnInit,
   SimpleChanges,
-  ViewChild
 } from '@angular/core';
-import { WySliderStyle } from './wy-slider-types';
-import { fromEvent } from 'rxjs';
+import {WySliderStyle} from './wy-slider-types';
 
 @Component({
   selector: 'app-wy-slider-handle',
@@ -20,7 +17,7 @@ import { fromEvent } from 'rxjs';
 export class WySliderHandleComponent implements OnInit, OnChanges {
   @Input() wyVertical = false;
   @Input() wyOffset: number;
-  public style: WySliderStyle;
+  public style: WySliderStyle = {};
 
   constructor() {
   }

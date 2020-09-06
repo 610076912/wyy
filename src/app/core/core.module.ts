@@ -9,6 +9,7 @@ import zh from '@angular/common/locales/zh';
 import {HttpClientModule} from '@angular/common/http';
 import {NZ_I18N, zh_CN} from 'ng-zorro-antd/i18n';
 import {ServiceModule} from '../service/service.module';
+import {AppStoreModule} from '../store';
 
 registerLocaleData(zh);
 
@@ -21,6 +22,7 @@ registerLocaleData(zh);
     HttpClientModule,
     ShareModule,
     AppRoutingModule,
+    AppStoreModule,
     ServiceModule
   ],
   exports: [
