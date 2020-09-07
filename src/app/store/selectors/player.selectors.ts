@@ -1,8 +1,10 @@
-import {PlayState} from '../reducers/player.reducer';
-import {createSelector, createFeatureSelector} from '@ngrx/store';
+import { PlayState } from '../reducers/player.reducer';
+import { createSelector, createFeatureSelector } from '@ngrx/store';
 
 const selectPlayerStates = (state: PlayState) => state;
 export const getPlayer = createFeatureSelector('player');
+
+
 export const getPlaying = createSelector(
   selectPlayerStates,
   (state: PlayState) => state.playing
@@ -28,4 +30,7 @@ export const getCurrentAction = createSelector(
   (state: PlayState) => state.currentAction
 );
 
-export const getCurrentSong = createSelector(selectPlayerStates, ({playList, currentIndex}: PlayState) => playList[currentIndex]);
+export const getCurrentSong = createSelector(
+  selectPlayerStates,
+  ({playList, currentIndex}: PlayState) => playList[currentIndex]
+);
