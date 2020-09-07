@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { AppStoreModule } from '../../../store';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {select, Store} from '@ngrx/store';
+import {AppStoreModule} from '../../../store';
 import {
   getCurrentIndex,
   getCurrentSong,
@@ -8,9 +8,9 @@ import {
   getPlayMode,
   getSongList
 } from '../../../store/selectors/player.selectors';
-import { Song } from '../../../service/data-types/common.types';
-import { PlayMode } from './player-types';
-import { setCurrentIndex } from '../../../store/actions/player.actions';
+import {Song} from '../../../service/data-types/common.types';
+import {PlayMode} from './player-types';
+import {setCurrentIndex} from '../../../store/actions/player.actions';
 
 @Component({
   selector: 'app-wy-player',
@@ -19,7 +19,8 @@ import { setCurrentIndex } from '../../../store/actions/player.actions';
 })
 export class WyPlayerComponent implements OnInit, AfterViewInit {
 
-  public sliderValue = 35;
+  percent = 0;
+  bufferPercent = 0;
 
   songList: Song[];
   playList: Song[];
@@ -79,22 +80,24 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
 
   watchPlayMode(mode: PlayMode): void {
     this.playMode = mode;
-    console.log(mode);
   }
 
   watchCurrentSong(song: Song): void {
-    console.log(11122);
     if (song) {
       this.currentSong = song;
       this.duration = song.dt / 1000;
-      console.log(song);
     }
+  }
+
+  // 进度条拖动监听
+  onPercentChange(per): void {
+    this.audioEl.currentTime = this.duration * (per / 100);
   }
 
   onToggle(): void {
     if (!this.currentSong) {
       if (this.playList.length) {
-        this.updateCurrentIndex(0);
+        this.updateIndex(0);
       }
     } else {
       if (this.songReady) {
@@ -110,18 +113,29 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
 
   // 上一曲
   onPrev(index: number): void {
-    this.updateCurrentIndex(index);
+    if (!this.songReady) {
+      return;
+    }
+    const newIndex = index <= 0 ? this.playList.length - 1 : index;
+    this.updateIndex(newIndex);
   }
 
   // 下一曲
   onNext(index: number): void {
-    console.log(this.songReady);
-    if (!this.songReady) return;
+    if (!this.songReady) {
+      return;
+    }
     const newIndex = index >= this.playList.length - 1 ? 0 : index;
-    this.updateCurrentIndex(newIndex);
+    this.updateIndex(newIndex);
   }
 
-  private updateCurrentIndex(index: number): void {
+  // 单曲循环
+  private loop(): void {
+    this.audioEl.currentTime = 0;
+    this.play();
+  }
+
+  private updateIndex(index: number): void {
     this.store$.dispatch(setCurrentIndex({currentIndex: index}));
     this.songReady = false;
   }
@@ -135,6 +149,11 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   // 播放时事件更新
   onTimeupdate(e): void {
     this.currentTime = e.target.currentTime;
+    this.percent = this.currentTime / this.duration * 100;
+    const buffered = this.audioEl.buffered;
+    if (buffered.length && this.bufferPercent < 100) {
+      this.bufferPercent = buffered.end(0) / this.duration * 100;
+    }
   }
 
   private play(): void {
@@ -143,7 +162,9 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   }
 
   get picUrl(): string {
-    return this.currentSong ? this.currentSong.al.picUrl : '//s4.music.126.net/style/web2/img/default/default_album.jpg';
+    return this.currentSong ?
+      this.currentSong.al.picUrl :
+      '//s4.music.126.net/style/web2/img/default/default_album.jpg';
   }
 
 }
