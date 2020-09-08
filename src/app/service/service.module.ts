@@ -7,7 +7,7 @@ export const API_CONFIG = new InjectionToken<string>('ApiConfigToken');
   declarations: [],
   imports: [],
   providers: [
-    {provide: API_CONFIG, useValue: 'http://localhost:3000/'}
+    {provide: API_CONFIG, useValue: '/api/'}
   ]
 })
 export class ServiceModule {

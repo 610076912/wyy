@@ -1,6 +1,6 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {select, Store} from '@ngrx/store';
-import {AppStoreModule} from '../../../store';
+import { AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
+import { select, Store } from '@ngrx/store';
+import { AppStoreModule } from '../../../store';
 import {
   getCurrentIndex,
   getCurrentSong,
@@ -8,9 +8,23 @@ import {
   getPlayMode,
   getSongList
 } from '../../../store/selectors/player.selectors';
-import {Song} from '../../../service/data-types/common.types';
-import {PlayMode} from './player-types';
-import {setCurrentIndex} from '../../../store/actions/player.actions';
+import { Song } from '../../../service/data-types/common.types';
+import { PlayMode } from './player-types';
+import { setCurrentIndex, setPlayList, setPlayMode } from '../../../store/actions/player.actions';
+import { fromEvent, Subscription } from 'rxjs';
+import { DOCUMENT } from '@angular/common';
+import { shuffle } from '../../../utils/array';
+
+const modeTypes: PlayMode[] = [{
+  type: 'loop',
+  label: '循环'
+}, {
+  type: 'random',
+  label: '随机'
+}, {
+  type: 'singleLoop',
+  label: '单曲循环'
+}];
 
 @Component({
   selector: 'app-wy-player',
@@ -25,18 +39,25 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   songList: Song[];
   playList: Song[];
   currentIndex: number;
-  playMode: PlayMode;
   currentSong: Song;
   duration = 0;
   currentTime = 0;
   playing = false;  // 是否正在播放
   songReady = false;  // 是否可以播放
+  volume = 40;   // 音量
+  hiddenVolumePanel = true; // 是否显示音量面板
+  clickSelf = false; // 点击的是否是自己
+  currentMode: PlayMode; // 当前的播放模式
+  modeCount = 0; // 点击切换播放模式按钮次数
+
+  private winClick: Subscription;
 
   @ViewChild('audioEl', {static: true}) private audio: ElementRef;
   private audioEl: HTMLAudioElement;
 
   constructor(
-    private store$: Store<{ player: AppStoreModule }>
+    private store$: Store<{ player: AppStoreModule }>,
+    @Inject(DOCUMENT) private doc: Document
   ) {
     const playerStore$ = this.store$.pipe(select('player'));
     // playerStore$.pipe(select(getSongList)).subscribe(list => {
@@ -79,7 +100,16 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   }
 
   watchPlayMode(mode: PlayMode): void {
-    this.playMode = mode;
+    this.currentMode = mode;
+    if (this.songList) {
+      let list = this.songList.slice(); // 脱离引用关系
+      if (mode.type === 'random') {
+        // 将数组的顺序打乱
+        list = shuffle(this.songList);
+        this.updateCurrentIndex(list, this.currentSong);
+        this.store$.dispatch(setPlayList({playList: list}));
+      }
+    }
   }
 
   watchCurrentSong(song: Song): void {
@@ -89,9 +119,62 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // 更新当前歌单index；
+  private updateCurrentIndex(list: Song[], song: Song): void {
+    const newIndex = list.findIndex(item => item.id === song.id);
+    this.store$.dispatch(setCurrentIndex({currentIndex: newIndex}));
+  }
+
+  // 点击切换播放模式
+  onChangeMode(): void {
+    const temp = modeTypes[++this.modeCount % 3];
+    this.store$.dispatch(setPlayMode({playMode: temp}));
+  }
+
   // 进度条拖动监听
-  onPercentChange(per): void {
-    this.audioEl.currentTime = this.duration * (per / 100);
+  onPercentChange(per: number): void {
+    if (this.currentSong) {
+      this.audioEl.currentTime = this.duration * (per / 100);
+    }
+  }
+
+  // 音量
+  onVolumeChange(per: number): void {
+    this.audioEl.volume = per / 100;
+  }
+
+  // 是否展示音量控制面板
+  toggleVolPanel(e: MouseEvent): void {
+    e.stopPropagation();
+    this.togglePanel();
+  }
+
+  // 是否展示面板
+  private togglePanel(): void {
+    this.hiddenVolumePanel = !this.hiddenVolumePanel;
+    if (!this.hiddenVolumePanel) {
+      this.bindDocumentClickListener();
+    } else {
+      this.unbindDocumentClickListener();
+    }
+  }
+
+  private bindDocumentClickListener(): void {
+    if (!this.winClick)
+      this.winClick = fromEvent(this.doc, 'click').subscribe(() => {
+        if (!this.clickSelf) {
+          this.hiddenVolumePanel = true;
+          this.unbindDocumentClickListener();
+        }
+        this.clickSelf = false;
+      });
+  }
+
+  private unbindDocumentClickListener(): void {
+    if (this.winClick) {
+      this.winClick.unsubscribe();
+      this.winClick = null;
+    }
   }
 
   onToggle(): void {
@@ -144,6 +227,16 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   onCanPlay(): void {
     this.playing = true;
     this.play();
+  }
+
+  // 当前歌曲播放结束
+  onPlayEnd(): void {
+    this.playing = false;
+    if (this.currentMode.type === 'singleLoop') {
+      this.loop();
+    } else {
+      this.onNext(this.currentIndex + 1);
+    }
   }
 
   // 播放时事件更新

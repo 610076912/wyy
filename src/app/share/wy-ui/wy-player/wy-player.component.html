@@ -1,4 +1,4 @@
-<div class="m-player">
+<div class="m-player" (click)="clickSelf = true">
   <div class="lock">
     <div class="left"></div>
     <div class="hand"></div>
@@ -29,9 +29,9 @@
               <!--ngModelChange 事件也可以监听到value的变化，但是这个事件在值变化的时候一直触发，导致
               拖动的间隙会有音乐克顿的播放。所以用 mousedown 事件来传递值-->
               <app-wy-slider
-                [(ngModel)]="percent"
-                (wyOnAfterChange)="onPercentChange($event)"
-                [bufferOffset]="bufferPercent">
+                      [(ngModel)]="percent"
+                      (wyOnAfterChange)="onPercentChange($event)"
+                      [bufferOffset]="bufferPercent">
               </app-wy-slider>
             </div>
             <span class="time">
@@ -44,13 +44,18 @@
           <i class="share" title="分享"></i>
         </div>
         <div class="ctrl">
-          <i class="volume" title="音量"></i>
-          <i class="loop" title="循环"></i>
+          <i class="volume" title="音量" (click)="toggleVolPanel($event)"></i>
+          <i [class]="currentMode.type" [title]="currentMode.label" (click)="onChangeMode()"></i>
           <p class="open">
             <span></span>
           </p>
-          <div class="control-vol">
-            <app-wy-slider class="hide" [(ngModel)]="bufferPercent" [wyVertical]="true"></app-wy-slider>
+          <div class="control-vol" [hidden]="hiddenVolumePanel">
+            <!--            音量          -->
+            <app-wy-slider
+                    [(ngModel)]="volume"
+                    (ngModelChange)="onVolumeChange($event)"
+                    [wyVertical]="true">
+            </app-wy-slider>
           </div>
         </div>
       </div>
@@ -62,6 +67,7 @@
     #audioEl
     (canplay)="onCanPlay()"
     (timeupdate)="onTimeupdate($event)"
+    (ended)="onPlayEnd()"
     [src]="currentSong?.url">
   </audio>
 </div>
