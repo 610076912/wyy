@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { AppStoreModule } from '../../../store';
+import {AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
+import {select, Store} from '@ngrx/store';
+import {AppStoreModule} from '../../../store';
 import {
   getCurrentIndex,
   getCurrentSong,
@@ -8,12 +8,12 @@ import {
   getPlayMode,
   getSongList
 } from '../../../store/selectors/player.selectors';
-import { Song } from '../../../service/data-types/common.types';
-import { PlayMode } from './player-types';
-import { setCurrentIndex, setPlayList, setPlayMode } from '../../../store/actions/player.actions';
-import { fromEvent, Subscription } from 'rxjs';
-import { DOCUMENT } from '@angular/common';
-import { shuffle } from '../../../utils/array';
+import {Song} from '../../../service/data-types/common.types';
+import {PlayMode} from './player-types';
+import {setCurrentIndex, setPlayList, setPlayMode} from '../../../store/actions/player.actions';
+import {fromEvent, Subscription} from 'rxjs';
+import {DOCUMENT} from '@angular/common';
+import {shuffle} from '../../../utils/array';
 
 const modeTypes: PlayMode[] = [{
   type: 'loop',
@@ -45,7 +45,8 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   playing = false;  // 是否正在播放
   songReady = false;  // 是否可以播放
   volume = 40;   // 音量
-  hiddenVolumePanel = true; // 是否显示音量面板
+  showVolumePanel = false; // 是否显示音量面板
+  showPanel = false;    // 是否显示播放列表面板
   clickSelf = false; // 点击的是否是自己
   currentMode: PlayMode; // 当前的播放模式
   modeCount = 0; // 点击切换播放模式按钮次数
@@ -146,13 +147,27 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   // 是否展示音量控制面板
   toggleVolPanel(e: MouseEvent): void {
     e.stopPropagation();
-    this.togglePanel();
+    this.togglePanel('showVolumePanel');
+  }
+
+  // 是否展示播放列表面板
+  togglePlayListPanel(e: MouseEvent): void {
+    e.stopPropagation();
+    console.log(this.songList);
+    if (this.songList.length > 0) {
+      this.togglePanel('showPanel');
+    }
+  }
+
+  // 播放列表切换歌曲
+  onChangeSong(song: Song): void {
+    this.updateCurrentIndex(this.playList, song);
   }
 
   // 是否展示面板
-  private togglePanel(): void {
-    this.hiddenVolumePanel = !this.hiddenVolumePanel;
-    if (!this.hiddenVolumePanel) {
+  private togglePanel(type: string): void {
+    this[type] = !this[type];
+    if (this[type]) {
       this.bindDocumentClickListener();
     } else {
       this.unbindDocumentClickListener();
@@ -160,14 +175,16 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   }
 
   private bindDocumentClickListener(): void {
-    if (!this.winClick)
+    if (!this.winClick) {
       this.winClick = fromEvent(this.doc, 'click').subscribe(() => {
         if (!this.clickSelf) {
-          this.hiddenVolumePanel = true;
+          this.showVolumePanel = false;
+          this.showPanel = false;
           this.unbindDocumentClickListener();
         }
         this.clickSelf = false;
       });
+    }
   }
 
   private unbindDocumentClickListener(): void {
@@ -199,7 +216,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     if (!this.songReady) {
       return;
     }
-    const newIndex = index <= 0 ? this.playList.length - 1 : index;
+    const newIndex = index < 0 ? this.playList.length - 1 : index;
     this.updateIndex(newIndex);
   }
 

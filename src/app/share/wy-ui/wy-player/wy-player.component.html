@@ -1,64 +1,74 @@
 <div class="m-player" (click)="clickSelf = true">
   <div class="lock">
-    <div class="left"></div>
-    <div class="hand"></div>
-    <div class="container">
-      <div class="wrap">
-        <div class="btns">
-          <i class="prev" (click)="onPrev(currentIndex - 1)"></i>
-          <i class="toggle" [class.playing]="playing" (click)="onToggle()"></i>
-          <i class="next" (click)="onNext(currentIndex + 1)"></i>
+    <div class="left"><i></i></div>
+  </div>
+  <div class="left"></div>
+  <div class="hand"></div>
+  <div class="container">
+    <div class="wrap">
+      <div class="btns">
+        <i class="prev" (click)="onPrev(currentIndex - 1)"></i>
+        <i class="toggle" [class.playing]="playing" (click)="onToggle()"></i>
+        <i class="next" (click)="onNext(currentIndex + 1)"></i>
+      </div>
+      <div class="head">
+        <img [src]="picUrl" alt="">
+        <i class="mask"></i>
+      </div>
+      <div class="play">
+        <div class="words clearfix">
+          <p class="ellipsis">{{currentSong?.al.name}}</p>
+          <ul class="songs clearfix">
+            <li *ngFor="let item of currentSong?.ar; last as isLast">
+              <a>{{item.name}}</a>
+              <span [hidden]="isLast">&nbsp; / &nbsp;</span>
+            </li>
+          </ul>
         </div>
-        <div class="head">
-          <img [src]="picUrl" alt="">
-          <i class="mask"></i>
-        </div>
-        <div class="play">
-          <div class="words clearfix">
-            <p class="ellipsis">{{currentSong?.al.name}}</p>
-            <ul class="songs clearfix">
-              <li *ngFor="let item of currentSong?.ar; last as isLast">
-                <a>{{item.name}}</a>
-                <span [hidden]="isLast">&nbsp; / &nbsp;</span>
-              </li>
-            </ul>
-          </div>
-          <div class="bar">
-            <div class="slider-wrap">
-              <!--(ngModelChange)="onPercentChange($event)"-->
-              <!--ngModelChange 事件也可以监听到value的变化，但是这个事件在值变化的时候一直触发，导致
-              拖动的间隙会有音乐克顿的播放。所以用 mousedown 事件来传递值-->
-              <app-wy-slider
-                      [(ngModel)]="percent"
-                      (wyOnAfterChange)="onPercentChange($event)"
-                      [bufferOffset]="bufferPercent">
-              </app-wy-slider>
-            </div>
-            <span class="time">
-              <em>{{currentTime | formatTime}}</em> / {{duration | formatTime}}
-            </span>
-          </div>
-        </div>
-        <div class="oper">
-          <i class="like" title="收藏"></i>
-          <i class="share" title="分享"></i>
-        </div>
-        <div class="ctrl">
-          <i class="volume" title="音量" (click)="toggleVolPanel($event)"></i>
-          <i [class]="currentMode.type" [title]="currentMode.label" (click)="onChangeMode()"></i>
-          <p class="open">
-            <span></span>
-          </p>
-          <div class="control-vol" [hidden]="hiddenVolumePanel">
-            <!--            音量          -->
+        <div class="bar">
+          <div class="slider-wrap">
+            <!--(ngModelChange)="onPercentChange($event)"-->
+            <!--ngModelChange 事件也可以监听到value的变化，但是这个事件在值变化的时候一直触发，导致
+            拖动的间隙会有音乐克顿的播放。所以用 mousedown 事件来传递值-->
             <app-wy-slider
-                    [(ngModel)]="volume"
-                    (ngModelChange)="onVolumeChange($event)"
-                    [wyVertical]="true">
+              [(ngModel)]="percent"
+              (wyOnAfterChange)="onPercentChange($event)"
+              [bufferOffset]="bufferPercent">
             </app-wy-slider>
           </div>
+          <span class="time">
+              <em>{{currentTime | formatTime}}</em> / {{duration | formatTime}}
+            </span>
         </div>
       </div>
+      <div class="oper">
+        <i class="like" title="收藏"></i>
+        <i class="share" title="分享"></i>
+      </div>
+      <div class="ctrl">
+        <i class="volume" title="音量" (click)="toggleVolPanel($event)"></i>
+        <i [ngClass]="currentMode.type" [title]="currentMode.label" (click)="onChangeMode()"></i>
+        <p class="open" (click)="togglePlayListPanel($event)">
+          <span></span>
+        </p>
+        <div class="control-vol" [hidden]="!showVolumePanel">
+          <!--            音量          -->
+          <app-wy-slider
+            [(ngModel)]="volume"
+            (ngModelChange)="onVolumeChange($event)"
+            [wyVertical]="true">
+          </app-wy-slider>
+        </div>
+      </div>
+      <app-wy-player-panel
+        (click)="clickSelf = true"
+        (closePanel)="showPanel = false"
+        (changeSong)="onChangeSong($event)"
+        [currentSong]="currentSong"
+        [currentIndex]="currentIndex"
+        [show]="showPanel"
+        [songList]="songList">
+      </app-wy-player-panel>
     </div>
   </div>
 
