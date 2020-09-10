@@ -16,7 +16,7 @@
   <div class="bd">
     <img src="//music.163.com/api/img/blur/109951163826278397" alt="背景图" class="imgbg">
     <div class="msk"></div>
-    <div class="list-wrap">
+    <app-wy-scroll class="list-wrap" (ScrollEnd)="scrollY = $event">
       <ul>
         <li
           (click)="changeSong.emit(song)"
@@ -39,7 +39,7 @@
           <div class="col link"></div>
         </li>
       </ul>
-    </div>
+    </app-wy-scroll>
     <ul></ul>
   </div>
 </div>

@@ -225,7 +225,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     if (!this.songReady) {
       return;
     }
-    const newIndex = index >= this.playList.length - 1 ? 0 : index;
+    const newIndex = index > this.playList.length - 1 ? 0 : index;
     this.updateIndex(newIndex);
   }
 
@@ -237,7 +237,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
 
   private updateIndex(index: number): void {
     this.store$.dispatch(setCurrentIndex({currentIndex: index}));
-    this.songReady = false;
+    // this.songReady = false;
   }
 
   // 监听播放器事件

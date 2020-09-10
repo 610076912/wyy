@@ -47,7 +47,7 @@ export class WySliderComponent implements OnInit, OnDestroy, ControlValueAccesso
   private dragEndR: Subscription | null;
 
   private isDragging = false;  // 是否正在移动
-  public value: SliderValue;
+  public value: SliderValue = 0;
   public offset: SliderValue = null;
 
   // ngModel 需要的事件
