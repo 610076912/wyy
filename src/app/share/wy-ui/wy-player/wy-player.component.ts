@@ -35,7 +35,6 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
 
   percent = 0;
   bufferPercent = 0;
-
   songList: Song[];
   playList: Song[];
   currentIndex: number;

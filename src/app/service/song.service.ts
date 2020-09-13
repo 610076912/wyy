@@ -21,7 +21,7 @@ export class SongService {
 
   getSongUrl(ids: string): Observable<SongUrl[]> {
     const params = new HttpParams().set('id', ids);
-    console.log(params);
+    // console.log(params);
     return this.http.get(this.uri + 'song/url', {params})
       .pipe(
         map((res: { data: SongUrl[] }) => res.data)

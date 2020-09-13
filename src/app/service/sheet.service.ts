@@ -32,8 +32,11 @@ export class SheetService {
 
   playSheet(id: number): Observable<Song[]> {
     return this.getSongSheetDetail(id).pipe(
-      pluck('tracks'),
-      switchMap(tracks => this.songService.getSongList(tracks))
+      pluck('tracks'),  // 获取流中的某个属性值
+      switchMap(tracks => {
+        // console.log('tracks', tracks);歌曲信息（不包含url）
+        return this.songService.getSongList(tracks);
+      })
     );
   }
 }
