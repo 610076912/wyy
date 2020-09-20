@@ -60,6 +60,9 @@ export class WyScrollComponent implements OnInit, AfterViewInit {
     this.bs.scrollToElement.apply(this.bs, args);
   }
 
+  scrollTo(): void {
+  }
+
   private refresh(): void {
     this.bs.refresh();
   }

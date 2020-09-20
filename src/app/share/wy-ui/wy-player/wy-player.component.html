@@ -61,6 +61,7 @@
         </div>
       </div>
       <app-wy-player-panel
+        [playing]="playing"
         (click)="clickSelf = true"
         (closePanel)="showPanel = false"
         (changeSong)="onChangeSong($event)"

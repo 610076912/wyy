@@ -27,14 +27,19 @@ export type Song = {
 };
 
 export type SongSheet = {
-  id: number,
-  name: string,
-  picUrl: string,
-  playCount: number,
-  tracks: Song[],
+  id: number;
+  name: string;
+  picUrl: string;
+  playCount: number;
+  tracks: Song[];
 };
 
 export type SongUrl = {
   id: number;
   url: string;
+};
+
+export type Lyric = {
+  lyric: string;
+  tlyric: string;
 };

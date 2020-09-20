@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {API_CONFIG, ServiceModule} from './service.module';
-import {observable, Observable, of} from 'rxjs';
-import {Singer, Song, SongSheet, SongUrl} from './data-types/common.types';
+import {Observable} from 'rxjs';
+import {Lyric, Song, SongUrl} from './data-types/common.types';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {map, switchMap, toArray} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import {Inject} from '@angular/core';
 
@@ -46,5 +46,25 @@ export class SongService {
       const url = urls.find(item => item.id === song.id).url;
       return {...song, url};
     });
+  }
+
+  getLyric(id: number): Observable<Lyric> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.get(this.uri + '/lyric', {params})
+      .pipe(
+        map((res: {[key: string]: {lyric: string}}): Lyric => {
+          try {
+            return {
+              lyric: res.lrc.lyric,
+              tlyric: res.tlyric.lyric
+            };
+          }catch (err) {
+            return {
+              lyric: '',
+              tlyric: ''
+            };
+          }
+        })
+      );
   }
 }

@@ -152,7 +152,6 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   // 是否展示播放列表面板
   togglePlayListPanel(e: MouseEvent): void {
     e.stopPropagation();
-    console.log(this.songList);
     if (this.songList.length > 0) {
       this.togglePanel('showPanel');
     }
