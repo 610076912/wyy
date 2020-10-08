@@ -65,6 +65,8 @@
         (click)="clickSelf = true"
         (closePanel)="showPanel = false"
         (changeSong)="onChangeSong($event)"
+        (deleteSong)="onDeleteSong($event)"
+        (clearSong)="onClearSong()"
         [currentSong]="currentSong"
         [show]="showPanel"
         [songList]="songList">

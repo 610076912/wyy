@@ -1,6 +1,6 @@
-import {AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
-import {select, Store} from '@ngrx/store';
-import {AppStoreModule} from '../../../store';
+import { AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
+import { select, Store } from '@ngrx/store';
+import { AppStoreModule } from '../../../store';
 import {
   getCurrentIndex,
   getCurrentSong,
@@ -8,12 +8,14 @@ import {
   getPlayMode,
   getSongList
 } from '../../../store/selectors/player.selectors';
-import {Song} from '../../../service/data-types/common.types';
-import {PlayMode} from './player-types';
-import {setCurrentIndex, setPlayList, setPlayMode} from '../../../store/actions/player.actions';
-import {fromEvent, Subscription} from 'rxjs';
-import {DOCUMENT} from '@angular/common';
-import {shuffle} from '../../../utils/array';
+import { Song } from '../../../service/data-types/common.types';
+import { PlayMode } from './player-types';
+import { setCurrentIndex, setPlayList, setPlayMode, setSongList } from '../../../store/actions/player.actions';
+import { fromEvent, Subscription } from 'rxjs';
+import { DOCUMENT } from '@angular/common';
+import { findIndex, shuffle } from '../../../utils/array';
+import { WyPlayerPanelComponent } from './wy-player-panel/wy-player-panel.component';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 const modeTypes: PlayMode[] = [{
   type: 'loop',
@@ -52,12 +54,14 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
 
   private winClick: Subscription;
 
-  @ViewChild('audioEl', {static: true}) private audio: ElementRef;
+  @ViewChild('audioEl', { static: true }) private audio: ElementRef;
+  @ViewChild(WyPlayerPanelComponent) private playerPanel: WyPlayerPanelComponent;
   private audioEl: HTMLAudioElement;
 
   constructor(
     private store$: Store<{ player: AppStoreModule }>,
-    @Inject(DOCUMENT) private doc: Document
+    @Inject(DOCUMENT) private doc: Document,
+    private nzModalServe: NzModalService
   ) {
     const playerStore$ = this.store$.pipe(select('player'));
     // playerStore$.pipe(select(getSongList)).subscribe(list => {
@@ -71,11 +75,11 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     // });
 
     const stateArr = [
-      {type: getSongList, cb: (list) => this.watchList(list, 'songList')},
-      {type: getPlayList, cb: (list) => this.watchList(list, 'playList')},
-      {type: getCurrentIndex, cb: (index) => this.watchCurrentIndex(index)},
-      {type: getPlayMode, cb: (mode) => this.watchPlayMode(mode)},
-      {type: getCurrentSong, cb: (song) => this.watchCurrentSong(song)}
+      { type: getSongList, cb: (list) => this.watchList(list, 'songList') },
+      { type: getPlayList, cb: (list) => this.watchList(list, 'playList') },
+      { type: getCurrentIndex, cb: (index) => this.watchCurrentIndex(index) },
+      { type: getPlayMode, cb: (mode) => this.watchPlayMode(mode) },
+      { type: getCurrentSong, cb: (song) => this.watchCurrentSong(song) }
     ];
 
     stateArr.forEach(item => {
@@ -107,7 +111,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
         // 将数组的顺序打乱
         list = shuffle(this.songList);
         this.updateCurrentIndex(list, this.currentSong);
-        this.store$.dispatch(setPlayList({playList: list}));
+        this.store$.dispatch(setPlayList({ playList: list }));
       }
     }
   }
@@ -122,19 +126,23 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   // 更新当前歌单index；
   private updateCurrentIndex(list: Song[], song: Song): void {
     const newIndex = list.findIndex(item => item.id === song.id);
-    this.store$.dispatch(setCurrentIndex({currentIndex: newIndex}));
+    this.store$.dispatch(setCurrentIndex({ currentIndex: newIndex }));
   }
 
   // 点击切换播放模式
   onChangeMode(): void {
     const temp = modeTypes[++this.modeCount % 3];
-    this.store$.dispatch(setPlayMode({playMode: temp}));
+    this.store$.dispatch(setPlayMode({ playMode: temp }));
   }
 
   // 进度条拖动监听
   onPercentChange(per: number): void {
     if (this.currentSong) {
-      this.audioEl.currentTime = this.duration * (per / 100);
+      const currentTime = this.duration * (per / 100);
+      this.audioEl.currentTime = currentTime;
+      if (this.playerPanel) {
+        this.playerPanel.seekLyric(currentTime * 1000);
+      }
     }
   }
 
@@ -231,10 +239,13 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   private loop(): void {
     this.audioEl.currentTime = 0;
     this.play();
+    if (this.playerPanel) {
+      this.playerPanel.seekLyric(0);
+    }
   }
 
   private updateIndex(index: number): void {
-    this.store$.dispatch(setCurrentIndex({currentIndex: index}));
+    this.store$.dispatch(setCurrentIndex({ currentIndex: index }));
     // this.songReady = false;
   }
 
@@ -273,6 +284,37 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     return this.currentSong ?
       this.currentSong.al.picUrl :
       '//s4.music.126.net/style/web2/img/default/default_album.jpg';
+  }
+
+  // 删除歌单中的歌曲
+  onDeleteSong(song: Song): void {
+    const songList = this.songList.slice();
+    const playList = this.playList.slice();
+    let currentIndex = this.currentIndex;
+    const songIndex = findIndex(songList, song);
+    songList.splice(songIndex, 1);
+    const pIndex = findIndex(playList, song);
+    playList.splice(pIndex, 1);
+    if (currentIndex > pIndex || currentIndex === playList.length) {
+      currentIndex--;
+    }
+
+    this.store$.dispatch(setSongList({ songList }));
+    this.store$.dispatch(setPlayList({ playList }));
+    this.store$.dispatch(setCurrentIndex({ currentIndex }));
+  }
+
+  // 清空歌曲
+  onClearSong(): void {
+    this.nzModalServe.confirm({
+      nzTitle: '确认清空列表？',
+      nzOnOk: () => {
+        console.log('清空');
+        this.store$.dispatch(setSongList({ songList: [] }));
+        this.store$.dispatch(setPlayList({ playList: [] }));
+        this.store$.dispatch(setCurrentIndex({ currentIndex: -1 }));
+      },
+    });
   }
 
 }

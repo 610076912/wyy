@@ -1,6 +1,7 @@
-import {Lyric} from '../../../../service/data-types/common.types';
-import {from, Subject, zip} from 'rxjs';
-import {skip} from 'rxjs/operators';
+import { Lyric } from '../../../../service/data-types/common.types';
+import { from, Subject, Subscription, zip } from 'rxjs';
+import { skip } from 'rxjs/operators';
+import { timer } from 'rxjs/internal/observable/timer';
 
 export interface BaseLyricLine {
   txt: string;
@@ -24,7 +25,7 @@ export class WyLyric {
   private lrc: Lyric;
   private curNum: number;
   private startStamp: number;
-  private timer: number;
+  private timer$: Subscription;
   private pauseStamp: number;
   handler = new Subject<Handler>();
   lines: LyricLine[] = [];
@@ -100,7 +101,7 @@ export class WyLyric {
         const len = thirdResult.length;
         const _thirdResult = len > 2 ? Number(thirdResult) : Number(thirdResult) * 10;
         const time = Number(result[1]) * 60 * 1000 + Number(result[2]) * 1000 + _thirdResult;
-        this.lines.push({txt, txtCn, time});
+        this.lines.push({ txt, txtCn, time });
       }
     }
   }
@@ -109,7 +110,7 @@ export class WyLyric {
   * todo 当当前播放的歌曲（currentSong）和播放状态(playing)改变时 调用此方法
   *  然后根据传入的当前歌曲播放时间 计算出 当前是那句歌词，递归暴露出去。
   * */
-  play(startTime = 0): void {
+  play(startTime = 0, skipCall = false): void {
     console.log('this.playing:', this.playing);
     if (!this.lines.length) {
       return;
@@ -118,11 +119,14 @@ export class WyLyric {
       this.playing = true;
     }
     this.curNum = this.findCurNum(startTime);
+    if (!skipCall) {
+      this.callHandler(this.curNum - 1);
+    }
     // todo 记录一个时间戳， 该时间戳为歌曲开始播放的时间。
     this.startStamp = Date.now() - startTime;
-    // this.callHandler();
     if (this.curNum < this.lines.length) {
-      clearTimeout(this.timer);
+      this.clearTimer();
+      // clearTimeout(this.timer);
       this.playReset();
     }
   }
@@ -132,20 +136,34 @@ export class WyLyric {
     // todo 用当前时间的下一句歌词时间，减去 歌曲播放的时间，就是该句歌词应该停留的时间。
     // todo 这里我觉得用下句歌词的开始时间减去上句歌词的开始时间， 就是上句歌词该停留的时间。
     const delay = line.time - (Date.now() - this.startStamp);
-    this.timer = setTimeout(() => {
+    this.timer$ = timer(delay).subscribe(() => {
       this.callHandler(this.curNum++);
       if (this.curNum < this.lines.length && this.playing) {
         this.playReset();
       }
-    }, delay);
+    });
+    // this.timer = setTimeout(() => {
+    //   this.callHandler(this.curNum++);
+    //   if (this.curNum < this.lines.length && this.playing) {
+    //     this.playReset();
+    //   }
+    // }, delay);
+  }
+
+  private clearTimer(): void {
+    if (this.timer$) {
+      this.timer$.unsubscribe();
+    }
   }
 
   private callHandler(i: number): void {
-    this.handler.next({
-      txt: this.lines[i].txt,
-      txtCn: this.lines[i].txtCn,
-      lineNum: i
-    });
+    if (i > 0) {
+      this.handler.next({
+        txt: this.lines[i].txt,
+        txtCn: this.lines[i].txtCn,
+        lineNum: i
+      });
+    }
   }
 
   private findCurNum(time: number): number {
@@ -158,7 +176,7 @@ export class WyLyric {
     this.playing = playing;
     if (playing) {
       const startTime = (this.pauseStamp || now) - (this.startStamp || now);
-      this.play(startTime);
+      this.play(startTime, true);
     } else {
       this.stop();
       this.pauseStamp = null;
@@ -168,7 +186,12 @@ export class WyLyric {
   stop(): void {
     if (this.playing) {
       this.playing = false;
-      clearTimeout(this.timer);
+      // clearTimeout(this.timer);
+      this.clearTimer();
     }
+  }
+
+  seek(time: number): void {
+    this.play(time);
   }
 }

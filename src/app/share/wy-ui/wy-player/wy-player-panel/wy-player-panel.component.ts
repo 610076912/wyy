@@ -1,11 +1,11 @@
-import {Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren} from '@angular/core';
-import {Song} from '../../../../service/data-types/common.types';
-import {WyScrollComponent} from '../wy-scroll/wy-scroll.component';
-import {findIndex} from '../../../../utils/array';
-import {timer} from 'rxjs';
-import {WINDOW} from '../../../../service/service.module';
-import {SongService} from '../../../../service/song.service';
-import {BaseLyricLine, LyricLine, WyLyric} from './wy-lyric';
+import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { Song } from '../../../../service/data-types/common.types';
+import { WyScrollComponent } from '../wy-scroll/wy-scroll.component';
+import { findIndex } from '../../../../utils/array';
+import { timer } from 'rxjs';
+import { WINDOW } from '../../../../service/service.module';
+import { SongService } from '../../../../service/song.service';
+import { BaseLyricLine, LyricLine, WyLyric } from './wy-lyric';
 
 @Component({
   selector: 'app-wy-player-panel',
@@ -27,6 +27,8 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
 
   @Output() closePanel = new EventEmitter<void>();
   @Output() changeSong = new EventEmitter<Song>();
+  @Output() deleteSong = new EventEmitter<Song>();
+  @Output() clearSong = new EventEmitter<void>();
 
   @ViewChildren(WyScrollComponent) readonly wyScroll: QueryList<WyScrollComponent>;
 
@@ -41,7 +43,7 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['songList']) {
-      this.currentIndex = 0;
+      this.currentIndex = findIndex(this.songList, this.currentSong);
     }
     if (changes['currentSong']) {
       if (this.currentSong) {
@@ -95,10 +97,9 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
   }
 
   private handlerLyric(): void {
-    this.lyric.handler.subscribe(({lineNum}) => {
-      console.log('lineNum:', lineNum);
+    this.lyric.handler.subscribe(({ lineNum }) => {
       if (!this.lyricRefs) {
-        this.lyricRefs = this.wyScroll.last.el.nativeElement.querySelectorAll('ul, li');
+        this.lyricRefs = this.wyScroll.last.el.nativeElement.querySelectorAll('ul li');
       }
       if (this.lyricRefs.length) {
         this.currentLineNum = lineNum;
@@ -117,6 +118,12 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
       this.currentLineNum = 0;
       this.lyricRefs = null;
       this.currentLyric = [];
+    }
+  }
+
+  seekLyric(time: number): void {
+    if (this.lyric) {
+      this.lyric.seek(time);
     }
   }
 
