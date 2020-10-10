@@ -16,6 +16,7 @@ import { DOCUMENT } from '@angular/common';
 import { findIndex, shuffle } from '../../../utils/array';
 import { WyPlayerPanelComponent } from './wy-player-panel/wy-player-panel.component';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { BatchActionService } from '../../../store/batch-action.service';
 
 const modeTypes: PlayMode[] = [{
   type: 'loop',
@@ -48,20 +49,21 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   volume = 40;   // 音量
   showVolumePanel = false; // 是否显示音量面板
   showPanel = false;    // 是否显示播放列表面板
-  clickSelf = false; // 点击的是否是自己
   currentMode: PlayMode; // 当前的播放模式
   modeCount = 0; // 点击切换播放模式按钮次数
 
+  bindFlag = false; // 是否给document绑定点击事件
   private winClick: Subscription;
 
-  @ViewChild('audioEl', { static: true }) private audio: ElementRef;
+  @ViewChild('audioEl', {static: true}) private audio: ElementRef;
   @ViewChild(WyPlayerPanelComponent) private playerPanel: WyPlayerPanelComponent;
   private audioEl: HTMLAudioElement;
 
   constructor(
     private store$: Store<{ player: AppStoreModule }>,
     @Inject(DOCUMENT) private doc: Document,
-    private nzModalServe: NzModalService
+    private nzModalServe: NzModalService,
+    private batchActionServe: BatchActionService
   ) {
     const playerStore$ = this.store$.pipe(select('player'));
     // playerStore$.pipe(select(getSongList)).subscribe(list => {
@@ -75,11 +77,11 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     // });
 
     const stateArr = [
-      { type: getSongList, cb: (list) => this.watchList(list, 'songList') },
-      { type: getPlayList, cb: (list) => this.watchList(list, 'playList') },
-      { type: getCurrentIndex, cb: (index) => this.watchCurrentIndex(index) },
-      { type: getPlayMode, cb: (mode) => this.watchPlayMode(mode) },
-      { type: getCurrentSong, cb: (song) => this.watchCurrentSong(song) }
+      {type: getSongList, cb: (list) => this.watchList(list, 'songList')},
+      {type: getPlayList, cb: (list) => this.watchList(list, 'playList')},
+      {type: getCurrentIndex, cb: (index) => this.watchCurrentIndex(index)},
+      {type: getPlayMode, cb: (mode) => this.watchPlayMode(mode)},
+      {type: getCurrentSong, cb: (song) => this.watchCurrentSong(song)}
     ];
 
     stateArr.forEach(item => {
@@ -111,7 +113,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
         // 将数组的顺序打乱
         list = shuffle(this.songList);
         this.updateCurrentIndex(list, this.currentSong);
-        this.store$.dispatch(setPlayList({ playList: list }));
+        this.store$.dispatch(setPlayList({playList: list}));
       }
     }
   }
@@ -126,13 +128,13 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   // 更新当前歌单index；
   private updateCurrentIndex(list: Song[], song: Song): void {
     const newIndex = list.findIndex(item => item.id === song.id);
-    this.store$.dispatch(setCurrentIndex({ currentIndex: newIndex }));
+    this.store$.dispatch(setCurrentIndex({currentIndex: newIndex}));
   }
 
   // 点击切换播放模式
   onChangeMode(): void {
     const temp = modeTypes[++this.modeCount % 3];
-    this.store$.dispatch(setPlayMode({ playMode: temp }));
+    this.store$.dispatch(setPlayMode({playMode: temp}));
   }
 
   // 进度条拖动监听
@@ -170,35 +172,37 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     this.updateCurrentIndex(this.playList, song);
   }
 
+  onClickOutSide(): void {
+    this.showVolumePanel = false;
+    this.showPanel = false;
+    this.bindFlag = false;
+  }
+
   // 是否展示面板
   private togglePanel(type: string): void {
     this[type] = !this[type];
-    if (this[type]) {
-      this.bindDocumentClickListener();
-    } else {
-      this.unbindDocumentClickListener();
-    }
+    this.bindFlag = this.showVolumePanel || this.showPanel;
   }
 
-  private bindDocumentClickListener(): void {
-    if (!this.winClick) {
-      this.winClick = fromEvent(this.doc, 'click').subscribe(() => {
-        if (!this.clickSelf) {
-          this.showVolumePanel = false;
-          this.showPanel = false;
-          this.unbindDocumentClickListener();
-        }
-        this.clickSelf = false;
-      });
-    }
-  }
-
-  private unbindDocumentClickListener(): void {
-    if (this.winClick) {
-      this.winClick.unsubscribe();
-      this.winClick = null;
-    }
-  }
+  // private bindDocumentClickListener(): void {
+  //   if (!this.winClick) {
+  //     this.winClick = fromEvent(this.doc, 'click').subscribe(() => {
+  //       if (!this.clickSelf) {
+  //         this.showVolumePanel = false;
+  //         this.showPanel = false;
+  //         this.unbindDocumentClickListener();
+  //       }
+  //       this.clickSelf = false;
+  //     });
+  //   }
+  // }
+  //
+  // private unbindDocumentClickListener(): void {
+  //   if (this.winClick) {
+  //     this.winClick.unsubscribe();
+  //     this.winClick = null;
+  //   }
+  // }
 
   onToggle(): void {
     if (!this.currentSong) {
@@ -245,7 +249,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   }
 
   private updateIndex(index: number): void {
-    this.store$.dispatch(setCurrentIndex({ currentIndex: index }));
+    this.store$.dispatch(setCurrentIndex({currentIndex: index}));
     // this.songReady = false;
   }
 
@@ -288,20 +292,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
 
   // 删除歌单中的歌曲
   onDeleteSong(song: Song): void {
-    const songList = this.songList.slice();
-    const playList = this.playList.slice();
-    let currentIndex = this.currentIndex;
-    const songIndex = findIndex(songList, song);
-    songList.splice(songIndex, 1);
-    const pIndex = findIndex(playList, song);
-    playList.splice(pIndex, 1);
-    if (currentIndex > pIndex || currentIndex === playList.length) {
-      currentIndex--;
-    }
-
-    this.store$.dispatch(setSongList({ songList }));
-    this.store$.dispatch(setPlayList({ playList }));
-    this.store$.dispatch(setCurrentIndex({ currentIndex }));
+    this.batchActionServe.deleteSong(song);
   }
 
   // 清空歌曲
@@ -309,11 +300,8 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     this.nzModalServe.confirm({
       nzTitle: '确认清空列表？',
       nzOnOk: () => {
-        console.log('清空');
-        this.store$.dispatch(setSongList({ songList: [] }));
-        this.store$.dispatch(setPlayList({ playList: [] }));
-        this.store$.dispatch(setCurrentIndex({ currentIndex: -1 }));
-      },
+        this.batchActionServe.clearSong();
+      }
     });
   }
 

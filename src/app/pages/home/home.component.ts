@@ -1,16 +1,10 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {HomeService} from '../../service/home.service';
-import {SingerService} from '../../service/singer.service';
 import {Banner, HotTag, Singer, SongSheet} from '../../service/data-types/common.types';
 import {NzCarouselComponent} from 'ng-zorro-antd/carousel';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {SheetService} from '../../service/sheet.service';
-import {select, Store} from '@ngrx/store';
-import {AppStoreModule} from '../../store';
-import {setCurrentIndex, setPlayList, setSongList} from '../../store/actions/player.actions';
-import {PlayState} from '../../store/reducers/player.reducer';
-import {findIndex, shuffle} from '../../utils/array';
+import { BatchActionService } from '../../store/batch-action.service';
 
 @Component({
   selector: 'app-home',
@@ -23,15 +17,12 @@ export class HomeComponent implements OnInit {
   public hotTags: HotTag[];
   public songSheetList: SongSheet[];
   public singerList: Singer[];
-  private playerState: PlayState;
   @ViewChild(NzCarouselComponent, {static: true}) private nzCarousel: NzCarouselComponent;
 
   constructor(
-    private homeService: HomeService,
-    private singerService: SingerService,
     private sheetService: SheetService,
     private route: ActivatedRoute,
-    private store$: Store<{ player: AppStoreModule }>,
+    private batchActionServe: BatchActionService
   ) {
     this.route.data.pipe(
       map(res => res.homeData)
@@ -45,9 +36,6 @@ export class HomeComponent implements OnInit {
     // this.getHotTags();
     // this.getSongSheets();
     // this.getSingerList();
-    this.store$.pipe(select('player')).subscribe((res: PlayState) => {
-      this.playerState = res;
-    });
   }
 
   // 获取banner图
@@ -94,16 +82,7 @@ export class HomeComponent implements OnInit {
 
   onPlaySheet(id): void {
     this.sheetService.playSheet(id).subscribe(list => {
-      const resList = list.filter(item => item.url != null); // 把没有url的歌曲过滤掉
-      this.store$.dispatch(setSongList({songList: resList}));
-      let trueIndex = 0;
-      let trueList = resList.slice();
-      if (this.playerState.playMode.type === 'random') {
-        trueList = shuffle(resList || []);
-        trueIndex = findIndex(trueList, resList[trueIndex]);
-      }
-      this.store$.dispatch(setPlayList({playList: trueList}));
-      this.store$.dispatch(setCurrentIndex({currentIndex: trueIndex}));
+      this.batchActionServe.selectPlayList({list, index: 0});
     });
   }
 
