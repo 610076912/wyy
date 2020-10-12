@@ -36,13 +36,23 @@ export class SheetInfoComponent implements OnInit {
 
   changeDesc(desc: string): void {
     if (desc.length < 99) {
-      this.description.short = '<b>介绍: </b>' + desc;
+      this.description.short = desc;
     } else {
-      const str = '<b>介绍: </b>' + desc.replace(/\n/g, '<br/>');
       this.description = {
-        short: str.slice(0, 99) + '...',
-        long: str
+        short: desc.slice(0, 99) + '...',
+        long: desc
       };
+    }
+  }
+
+  toggleDesc(): void {
+    this.controlDesc.isExpand = !this.controlDesc.isExpand;
+    if (this.controlDesc.isExpand) {
+      this.controlDesc.label = '收起';
+      this.controlDesc.iconCls = 'up';
+    } else {
+      this.controlDesc.label = '展开';
+      this.controlDesc.iconCls = 'down';
     }
   }
 
