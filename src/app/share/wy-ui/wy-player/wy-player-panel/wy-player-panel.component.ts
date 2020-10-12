@@ -17,6 +17,7 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
   public scrollY = 0;
   public currentIndex: number;
   public currentLyric: BaseLyricLine[];
+  public startLine = 2;
   private lyric: WyLyric;
   private lyricRefs: NodeList;
   currentLineNum: number;
@@ -65,6 +66,9 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
           if (this.currentSong) {
             this.scrollToCurrent(0);
           }
+          if (this.lyricRefs) {
+            this.scrollToCurrentLyric(0);
+          }
         });
         // todo 用timer操作符代替全局变量下的setTimeout
         // this.win.setTimeout(() => {
@@ -87,8 +91,9 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
     this.songServe.getLyric(this.currentSong.id).subscribe(res => {
       this.lyric = new WyLyric(res);
       this.currentLyric = this.lyric.lines;
-      console.log('currentLyric', this.currentLyric);
-      this.handlerLyric();
+      // console.log('currentLyric', this.currentLyric);
+      this.startLine = res.tlyric ? 1 : 2;
+      this.handlerLyric(this.startLine);
       this.wyScroll.last.scrollTo();
       if (this.playing) {
         this.lyric.play();
@@ -96,16 +101,17 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
     });
   }
 
-  private handlerLyric(): void {
+  private handlerLyric(startLine = 2): void {
     this.lyric.handler.subscribe(({ lineNum }) => {
       if (!this.lyricRefs) {
         this.lyricRefs = this.wyScroll.last.el.nativeElement.querySelectorAll('ul li');
       }
       if (this.lyricRefs.length) {
         this.currentLineNum = lineNum;
-        const targetLine = this.lyricRefs[lineNum];
-        if (targetLine) {
-          this.wyScroll.last.scrollToElement(targetLine, 300, false, false);
+        if (lineNum > startLine) {
+          this.scrollToCurrentLyric();
+        } else {
+          this.wyScroll.last.scrollTo(0, 0);
         }
       }
     });
@@ -135,6 +141,13 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
       if ((offsetTop - Math.abs(this.scrollY)) > 205 || (offsetTop - Math.abs(this.scrollY)) < 0) {
         this.wyScroll.first.scrollToElement(currentLi, speed, false, false);
       }
+    }
+  }
+
+  scrollToCurrentLyric(speed = 300): void {
+    const targetLine = this.lyricRefs[this.currentLineNum - this.startLine];
+    if (targetLine) {
+      this.wyScroll.last.scrollToElement(targetLine, speed, false, false);
     }
   }
 }

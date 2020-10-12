@@ -1,14 +1,10 @@
 <div class="home">
   <!--  轮播图 -->
   <app-wy-carousel #wyCarousel [activeIndex]="carouselActiveIndex" (changeSlide)="onChangeSlide($event)">
-    <nz-carousel
-      nzEffect="fade"
-      nzAutoPlay
-      (nzBeforeChange)="onBeforeChange($event)"
-      [nzDotRender]="wyCarousel.dotRef">
+    <nz-carousel nzEffect="fade" nzAutoPlay (nzBeforeChange)="onBeforeChange($event)" [nzDotRender]="wyCarousel.dotRef">
       <div class="carousel-item" nz-carousel-content *ngFor="let banner of banners">
         <a [href]="banner.url" target="_blank" class="banner-item">
-          <img [src]="banner.imageUrl"/>
+          <img [src]="banner.imageUrl" />
         </a>
       </div>
     </nz-carousel>
@@ -25,7 +21,9 @@
                 <a>热门推荐</a>
               </h2>
               <nav>
-                <a *ngFor="let hotTag of hotTags">{{hotTag.name}}</a>
+                <a *ngFor="let hotTag of hotTags" routerLink="/sheet" [queryParams]="{cat: hotTag.name}">
+                  {{hotTag.name}}
+                </a>
               </nav>
             </div>
             <a>
@@ -35,10 +33,7 @@
           </div>
           <div class="down">
             <div class="down-wrap">
-              <app-single-sheet
-                (sheetPlay)="onPlaySheet($event)"
-                *ngFor="let sheet of songSheetList"
-                [sheet]="sheet"
+              <app-single-sheet (sheetPlay)="onPlaySheet($event)" *ngFor="let sheet of songSheetList" [sheet]="sheet"
                 class="sheet-item"></app-single-sheet>
             </div>
           </div>

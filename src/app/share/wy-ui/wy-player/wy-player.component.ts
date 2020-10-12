@@ -55,7 +55,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   bindFlag = false; // 是否给document绑定点击事件
   private winClick: Subscription;
 
-  @ViewChild('audioEl', {static: true}) private audio: ElementRef;
+  @ViewChild('audioEl', { static: true }) private audio: ElementRef;
   @ViewChild(WyPlayerPanelComponent) private playerPanel: WyPlayerPanelComponent;
   private audioEl: HTMLAudioElement;
 
@@ -77,11 +77,11 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
     // });
 
     const stateArr = [
-      {type: getSongList, cb: (list) => this.watchList(list, 'songList')},
-      {type: getPlayList, cb: (list) => this.watchList(list, 'playList')},
-      {type: getCurrentIndex, cb: (index) => this.watchCurrentIndex(index)},
-      {type: getPlayMode, cb: (mode) => this.watchPlayMode(mode)},
-      {type: getCurrentSong, cb: (song) => this.watchCurrentSong(song)}
+      { type: getSongList, cb: (list) => this.watchList(list, 'songList') },
+      { type: getPlayList, cb: (list) => this.watchList(list, 'playList') },
+      { type: getCurrentIndex, cb: (index) => this.watchCurrentIndex(index) },
+      { type: getPlayMode, cb: (mode) => this.watchPlayMode(mode) },
+      { type: getCurrentSong, cb: (song) => this.watchCurrentSong(song) }
     ];
 
     stateArr.forEach(item => {
@@ -112,9 +112,9 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
       if (mode.type === 'random') {
         // 将数组的顺序打乱
         list = shuffle(this.songList);
-        this.updateCurrentIndex(list, this.currentSong);
-        this.store$.dispatch(setPlayList({playList: list}));
       }
+      this.updateCurrentIndex(list, this.currentSong);
+      this.store$.dispatch(setPlayList({ playList: list }));
     }
   }
 
@@ -128,13 +128,13 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   // 更新当前歌单index；
   private updateCurrentIndex(list: Song[], song: Song): void {
     const newIndex = list.findIndex(item => item.id === song.id);
-    this.store$.dispatch(setCurrentIndex({currentIndex: newIndex}));
+    this.store$.dispatch(setCurrentIndex({ currentIndex: newIndex }));
   }
 
   // 点击切换播放模式
   onChangeMode(): void {
     const temp = modeTypes[++this.modeCount % 3];
-    this.store$.dispatch(setPlayMode({playMode: temp}));
+    this.store$.dispatch(setPlayMode({ playMode: temp }));
   }
 
   // 进度条拖动监听
@@ -249,7 +249,7 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
   }
 
   private updateIndex(index: number): void {
-    this.store$.dispatch(setCurrentIndex({currentIndex: index}));
+    this.store$.dispatch(setCurrentIndex({ currentIndex: index }));
     // this.songReady = false;
   }
 
