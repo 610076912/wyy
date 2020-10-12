@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {SongSheet} from '../../../service/data-types/common.types';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { SongSheet } from '../../../service/data-types/common.types';
 
 @Component({
   selector: 'app-single-sheet',
@@ -20,4 +20,7 @@ export class SingleSheetComponent implements OnInit {
     this.sheetPlay.emit(id);
   }
 
+  get coverImg(): string {
+    return this.sheet.picUrl || this.sheet.coverImgUrl;
+  }
 }

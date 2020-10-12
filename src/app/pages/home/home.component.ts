@@ -1,9 +1,9 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
-import {Banner, HotTag, Singer, SongSheet} from '../../service/data-types/common.types';
-import {NzCarouselComponent} from 'ng-zorro-antd/carousel';
-import {ActivatedRoute} from '@angular/router';
-import {map} from 'rxjs/operators';
-import {SheetService} from '../../service/sheet.service';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Banner, HotTag, Singer, SongSheet } from '../../service/data-types/common.types';
+import { NzCarouselComponent } from 'ng-zorro-antd/carousel';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs/operators';
+import { SheetService } from '../../service/sheet.service';
 import { BatchActionService } from '../../store/batch-action.service';
 
 @Component({
@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private sheetService: SheetService,
     private route: ActivatedRoute,
+    private router: Router,
     private batchActionServe: BatchActionService
   ) {
     this.route.data.pipe(
@@ -84,6 +85,11 @@ export class HomeComponent implements OnInit {
     this.sheetService.playSheet(id).subscribe(list => {
       this.batchActionServe.selectPlayList({list, index: 0});
     });
+  }
+
+  // 跳转到歌单详情
+  toInfo(id: number): void {
+    this.router.navigate(['/sheetInfo', id]);
   }
 
 }

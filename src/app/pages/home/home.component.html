@@ -4,7 +4,7 @@
     <nz-carousel nzEffect="fade" nzAutoPlay (nzBeforeChange)="onBeforeChange($event)" [nzDotRender]="wyCarousel.dotRef">
       <div class="carousel-item" nz-carousel-content *ngFor="let banner of banners">
         <a [href]="banner.url" target="_blank" class="banner-item">
-          <img [src]="banner.imageUrl" />
+          <img [src]="banner.imageUrl"/>
         </a>
       </div>
     </nz-carousel>
@@ -33,8 +33,13 @@
           </div>
           <div class="down">
             <div class="down-wrap">
-              <app-single-sheet (sheetPlay)="onPlaySheet($event)" *ngFor="let sheet of songSheetList" [sheet]="sheet"
-                class="sheet-item"></app-single-sheet>
+              <app-single-sheet
+                      (sheetPlay)="onPlaySheet($event)"
+                      *ngFor="let sheet of songSheetList"
+                      [sheet]="sheet"
+                      (click)="toInfo(sheet.id)"
+                      class="sheet-item">
+              </app-single-sheet>
             </div>
           </div>
         </div>

@@ -34,6 +34,7 @@ export class SheetService {
     );
   }
 
+  // 获取歌单详情
   getSongSheetDetail(id: number): Observable<SongSheet> {
     const params = new HttpParams().set('id', id.toString());
     console.log(params);
