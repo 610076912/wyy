@@ -14,7 +14,14 @@ export type Singer = {
   id: number,
   name: string,
   picUrl: string,
+  alias: string[],
   albumSize: number
+};
+
+// 歌手详情和热门歌曲
+export type SingerDetail = {
+  artist: Singer;
+  hotSongs: Song[];
 };
 
 export type Song = {
@@ -59,4 +66,6 @@ export type Lyric = {
 export type SheetList = {
   playlists: SongSheet;
   total: number;
-}
+};
+
+

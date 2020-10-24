@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
-import { AppStoreModule } from './index';
-import { Song } from '../service/data-types/common.types';
-import { setCurrentIndex, setPlayList, setSongList } from './actions/player.actions';
-import { findIndex, shuffle } from '../utils/array';
-import { select, Store } from '@ngrx/store';
-import { PlayState } from './reducers/player.reducer';
+import {Injectable} from '@angular/core';
+import {AppStoreModule} from './index';
+import {Song} from '../service/data-types/common.types';
+import {setCurrentIndex, setPlayList, setSongList} from './actions/player.actions';
+import {findIndex, shuffle} from '../utils/array';
+import {select, Store} from '@ngrx/store';
+import {PlayState} from './reducers/player.reducer';
 
 @Injectable({
   providedIn: AppStoreModule
@@ -14,14 +14,52 @@ export class BatchActionService {
 
   constructor(private store$: Store<{ player: AppStoreModule }>) {
     this.store$.pipe(select('player')).subscribe((res: PlayState) => {
-      console.log('playerState:', res);
       this.playerState = res;
     });
   }
 
+  // 添加歌曲
+  insertSong(song: Song, isPlay: boolean): void {
+    const songList = this.playerState.songList.slice();
+    const playList = this.playerState.playList.slice();
+    let insertIndex = this.playerState.currentIndex;
+    const pIndex = findIndex(playList, song);
+    // 歌曲已经存在当前歌单中
+    if (pIndex > -1) {
+      if (isPlay) {
+        insertIndex = pIndex;
+      }
+    } else {
+      songList.push(song);
+      playList.push(song);
+      if (isPlay) {
+        insertIndex = songList.length - 1;
+      }
+      this.store$.dispatch(setSongList({songList}));
+      this.store$.dispatch(setPlayList({playList}));
+    }
+    if (insertIndex !== this.playerState.currentIndex) {
+      this.store$.dispatch(setCurrentIndex({currentIndex: insertIndex}));
+    }
+  }
+
+  // 添加多首歌曲
+  insertSongs(songs: Song[]): void {
+    const songList = this.playerState.songList.slice();
+    const playList = this.playerState.playList.slice();
+    songs.forEach(item => {
+      const pIndex = findIndex(playList, item);
+      if (pIndex === -1) {
+        songList.push(item);
+        playList.push(item);
+      }
+    });
+    this.store$.dispatch(setSongList({songList}));
+    this.store$.dispatch(setPlayList({playList}));
+  }
+
   // 播放列表
   selectPlayList({list, index}: { list: Song[], index: number }): void {
-    console.log('播放列表:', list);
     const resList = list.filter(item => item.url != null); // 把没有url的歌曲过滤掉
     this.store$.dispatch(setSongList({songList: resList}));
     let trueIndex = index;
@@ -47,15 +85,15 @@ export class BatchActionService {
       currentIndex--;
     }
 
-    this.store$.dispatch(setSongList({ songList }));
-    this.store$.dispatch(setPlayList({ playList }));
-    this.store$.dispatch(setCurrentIndex({ currentIndex }));
+    this.store$.dispatch(setSongList({songList}));
+    this.store$.dispatch(setPlayList({playList}));
+    this.store$.dispatch(setCurrentIndex({currentIndex}));
   }
 
   // 清空歌曲
   clearSong(): void {
-    this.store$.dispatch(setSongList({ songList: [] }));
-    this.store$.dispatch(setPlayList({ playList: [] }));
-    this.store$.dispatch(setCurrentIndex({ currentIndex: -1 }));
+    this.store$.dispatch(setSongList({songList: []}));
+    this.store$.dispatch(setPlayList({playList: []}));
+    this.store$.dispatch(setCurrentIndex({currentIndex: -1}));
   }
 }

@@ -4,7 +4,7 @@
     <nz-carousel nzEffect="fade" nzAutoPlay (nzBeforeChange)="onBeforeChange($event)" [nzDotRender]="wyCarousel.dotRef">
       <div class="carousel-item" nz-carousel-content *ngFor="let banner of banners">
         <a [href]="banner.url" target="_blank" class="banner-item">
-          <img [src]="banner.imageUrl"/>
+          <img [src]="banner.imageUrl" alt="banner"/>
         </a>
       </div>
     </nz-carousel>
@@ -50,7 +50,7 @@
         <div class="settled-singer">
           <div class="tit"><b>入驻歌手</b></div>
           <div class="list">
-            <div class="card" *ngFor="let item of singerList">
+            <div class="card" *ngFor="let item of singerList" [routerLink]="['/singer', item.id]">
               <div class="pic">
                 <img [src]="item.picUrl" [alt]="item.name">
               </div>

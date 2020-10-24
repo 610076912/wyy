@@ -29,7 +29,6 @@ export class SheetListComponent implements OnInit {
     private batchActionServe: BatchActionService
   ) {
     this.listParams.cat = this.route.snapshot.queryParamMap.get('cat') || '全部';
-    console.log('this.route.snapshot:', this.route.snapshot);
     this.getList();
   }
 

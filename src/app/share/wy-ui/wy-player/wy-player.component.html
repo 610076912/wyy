@@ -16,14 +16,14 @@
       </div>
       <div class="head">
         <img [src]="picUrl" alt="">
-        <i class="mask"></i>
+        <i class="mask" (click)="toInfo(['/songInfo', currentSong && currentSong.id])"></i>
       </div>
       <div class="play">
         <div class="words clearfix">
-          <p class="ellipsis">{{currentSong?.al.name}}</p>
+          <p class="ellipsis" (click)="toInfo(['/songInfo', currentSong && currentSong.id])">{{currentSong?.al.name}}</p>
           <ul class="songs clearfix">
             <li *ngFor="let item of currentSong?.ar; last as isLast">
-              <a>{{item.name}}</a>
+              <a (click)="toInfo(['/singer', item.id])">{{item.name}}</a>
               <span [hidden]="isLast">&nbsp; / &nbsp;</span>
             </li>
           </ul>
@@ -69,6 +69,7 @@
               (changeSong)="onChangeSong($event)"
               (deleteSong)="onDeleteSong($event)"
               (clearSong)="onClearSong()"
+              (toInfo)="toInfo($event)"
               [currentSong]="currentSong"
               [show]="showPanel"
               [songList]="songList">

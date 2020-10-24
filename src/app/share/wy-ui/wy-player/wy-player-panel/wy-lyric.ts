@@ -112,7 +112,6 @@ export class WyLyric {
   *  然后根据传入的当前歌曲播放时间 计算出 当前是那句歌词，递归暴露出去。
   * */
   play(startTime = 0, skipCall = false): void {
-    console.log('this.playing:', this.playing);
     if (!this.lines.length) {
       return;
     }

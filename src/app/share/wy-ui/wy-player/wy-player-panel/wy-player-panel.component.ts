@@ -5,7 +5,7 @@ import { findIndex } from '../../../../utils/array';
 import { timer } from 'rxjs';
 import { WINDOW } from '../../../../service/service.module';
 import { SongService } from '../../../../service/song.service';
-import { BaseLyricLine, LyricLine, WyLyric } from './wy-lyric';
+import { BaseLyricLine, WyLyric } from './wy-lyric';
 
 @Component({
   selector: 'app-wy-player-panel',
@@ -30,6 +30,7 @@ export class WyPlayerPanelComponent implements OnInit, OnChanges {
   @Output() changeSong = new EventEmitter<Song>();
   @Output() deleteSong = new EventEmitter<Song>();
   @Output() clearSong = new EventEmitter<void>();
+  @Output() toInfo = new EventEmitter<[string, number]>();
 
   @ViewChildren(WyScrollComponent) readonly wyScroll: QueryList<WyScrollComponent>;
 
