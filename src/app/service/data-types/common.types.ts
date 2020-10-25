@@ -68,4 +68,10 @@ export type SheetList = {
   total: number;
 };
 
+export type SearchResult = {
+  artists?: Singer[];
+  playlists?: SongSheet[];
+  songs?: Song[];
+};
+
 

@@ -2,17 +2,19 @@ import { NgModule } from '@angular/core';
 import { SingleSheetComponent } from './single-sheet/single-sheet.component';
 import { PlayCountPipe } from '../pips/play-count.pipe';
 import { WyPlayerModule } from './wy-player/wy-player.module';
+import {WySearchModule} from './wy-search/wy-search.module';
 
 @NgModule({
   declarations: [
     SingleSheetComponent,
     PlayCountPipe
   ],
-  imports: [WyPlayerModule],
+  imports: [WyPlayerModule, WySearchModule],
   exports: [
     SingleSheetComponent,
     PlayCountPipe,
-    WyPlayerModule
+    WyPlayerModule,
+    WySearchModule
   ]
 })
 export class WyUiModule {

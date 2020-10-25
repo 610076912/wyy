@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
+import {SearchService} from './service/search.service';
+import {SearchResult} from './service/data-types/common.types';
 
 
 @Component({
@@ -18,4 +20,22 @@ export class AppComponent {
       path: '/sheet'
     }
   ];
+
+  searchResult: SearchResult;
+
+  constructor(
+    private searchService: SearchService
+  ) {
+  }
+
+  onSearch(value): void {
+    console.log(value);
+    if (value) {
+      this.searchService.search(value).subscribe(res => {
+        this.searchResult = res;
+      });
+    } else {
+      this.searchResult = {};
+    }
+  }
 }
