@@ -18,6 +18,7 @@ import {WyPlayerPanelComponent} from './wy-player-panel/wy-player-panel.componen
 import {NzModalService} from 'ng-zorro-antd/modal';
 import {BatchActionService} from '../../../store/batch-action.service';
 import {Router} from '@angular/router';
+import {animate, state, style, transition, trigger} from '@angular/animations';
 
 const modeTypes: PlayMode[] = [{
   type: 'loop',
@@ -33,9 +34,19 @@ const modeTypes: PlayMode[] = [{
 @Component({
   selector: 'app-wy-player',
   templateUrl: './wy-player.component.html',
-  styleUrls: ['./wy-player.component.less']
+  styleUrls: ['./wy-player.component.less'],
+  animations: [trigger('showHide', [
+    state('show', style({bottom: 0})),
+    state('hide', style({bottom: -71})),
+    transition('show=>hide', [animate('0.3s')]),
+    transition('hide=>show', [animate('0.1s')])
+  ])]
 })
 export class WyPlayerComponent implements OnInit, AfterViewInit {
+  showPlayer = 'hide';
+  isLocked = false;
+  // 是否正在动画过程中
+  animating = false;
 
   percent = 0;
   bufferPercent = 0;
@@ -312,6 +323,12 @@ export class WyPlayerComponent implements OnInit, AfterViewInit {
       this.showPanel = false;
       this.showVolumePanel = false;
       this.router.navigate(path);
+    }
+  }
+
+  togglePlayer(type: string): void {
+    if (!this.isLocked && !this.animating) {
+      this.showPlayer = type;
     }
   }
 
