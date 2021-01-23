@@ -36,7 +36,8 @@ export const initialState: PlayState = {
   currentIndex: -1
 };
 
-const reducer = createReducer(initialState,
+const reducer = createReducer(
+  initialState,
   on(setPlaying, (state, {playing}) => ({...state, playing})),
   on(setPlayList, (state, {playList}) => ({...state, playList})),
   on(setSongList, (state, {songList}) => ({...state, songList})),
